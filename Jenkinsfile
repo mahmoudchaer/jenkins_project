@@ -2,16 +2,18 @@ pipeline {
   agent any
 
   environment {
+    PYTHON_EXE = '"C:\\Program Files\\Python311\\python.exe"'
     VIRTUAL_ENV = 'venv'
   }
 
   stages {
+
     stage('Setup') {
       steps {
         bat '''
-          python -m venv %VIRTUAL_ENV%
+          %PYTHON_EXE% -m venv %VIRTUAL_ENV%
           call %VIRTUAL_ENV%\\Scripts\\activate
-          python -m pip install --upgrade pip
+          %PYTHON_EXE% -m pip install --upgrade pip
           pip install -r requirements.txt
         '''
       }

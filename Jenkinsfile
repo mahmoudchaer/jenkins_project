@@ -32,6 +32,7 @@ pipeline {
       steps {
         bat '''
           call %VIRTUAL_ENV%\\Scripts\\activate
+          set PYTHONPATH=%CD%
           pytest
         '''
       }

@@ -38,9 +38,54 @@ pipeline {
       }
     }
 
+    stage('Coverage') {
+      steps {
+        bat '''
+          call %VIRTUAL_ENV%\\Scripts\\activate
+          set PYTHONPATH=%CD%
+          coverage run -m pytest
+          coverage report
+          coverage html
+        '''
+      }
+      post {
+        always {
+          publishHTML([
+            reportDir: 'htmlcov',
+            reportFiles: 'index.html',
+            reportName: 'Coverage Report'
+          ])
+        }
+      }
+    }
+
+    stage('Security Scan') {
+      steps {
+        bat '''
+          call %VIRTUAL_ENV%\\Scripts\\activate
+          bandit -r . -f json -o bandit-report.json || exit 0
+          bandit -r .
+        '''
+      }
+      post {
+        always {
+          archiveArtifacts artifacts: 'bandit-report.json', allowEmptyArchive: true
+        }
+      }
+    }
+
     stage('Deploy') {
       steps {
-        echo 'Deploying application...'
+        bat '''
+          call %VIRTUAL_ENV%\\Scripts\\activate
+          echo "Deploying application..."
+          echo "Creating deployment package..."
+          if not exist deploy mkdir deploy
+          copy app.py deploy\\
+          copy requirements.txt deploy\\
+          echo "Deployment package created successfully!"
+          echo "Ready for deployment to remote server."
+        '''
       }
     }
   }
